@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1060506710450",
+    "project_id": "toesteldelen",
+    "storage_bucket": "toesteldelen.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1060506710450:android:ca14dc63082c9b206bb4ab",
+        "android_client_info": {
+          "package_name": "com.example.toesteldelen_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD44YTV0z5KOwXGY0SUX6HpTE2GfBhVszE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
