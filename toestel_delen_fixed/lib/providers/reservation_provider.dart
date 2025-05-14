@@ -31,12 +31,14 @@ class ReservationProvider with ChangeNotifier {
         userId: ownerId,
         title: 'New Reservation',
         message: 'You have a new reservation for your appliance from ${startDate.toString().split(' ')[0]} to ${endDate.toString().split(' ')[0]}.',
+        type: 'reservation',
       );
 
       await _firebaseService.createNotification(
         userId: renterId,
         title: 'Reservation Confirmation',
         message: 'Your reservation from ${startDate.toString().split(' ')[0]} to ${endDate.toString().split(' ')[0]} has been created.',
+        type: 'reservation',
       );
 
       notifyListeners();

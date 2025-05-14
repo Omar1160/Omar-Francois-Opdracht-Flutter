@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "1060506710450",
-    "project_id": "toesteldelen",
-    "storage_bucket": "toesteldelen.firebasestorage.app"
+    "project_number": "444141943336",
+    "project_id": "toestel-delen-flutter",
+    "storage_bucket": "toestel-delen-flutter.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1060506710450:android:ca14dc63082c9b206bb4ab",
+        "mobilesdk_app_id": "1:444141943336:android:32a63654120810a55d931d",
         "android_client_info": {
-          "package_name": "com.example.toesteldelen_project"
+          "package_name": "com.example.toestel_delen_fixed"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD44YTV0z5KOwXGY0SUX6HpTE2GfBhVszE"
+          "current_key": "AIzaSyCyrZ2yILAhOg5o8OsLcv8XDpljgJOqdLU"
         }
       ],
       "services": {

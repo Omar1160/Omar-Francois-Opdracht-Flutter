@@ -52,7 +52,9 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ReviewsScreen(applianceId: widget.appliance.id),
+                  builder: (context) => ReviewsScreen(
+                      applianceId: widget.appliance.id,
+                      toUserId: widget.appliance.ownerId),
                 ),
               );
             },

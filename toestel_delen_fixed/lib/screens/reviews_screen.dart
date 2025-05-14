@@ -9,8 +9,13 @@ import 'package:intl/intl.dart';
 
 class ReviewsScreen extends StatefulWidget {
   final String applianceId;
+  final String toUserId;
 
-  const ReviewsScreen({Key? key, required this.applianceId}) : super(key: key);
+  const ReviewsScreen({
+    Key? key,
+    required this.applianceId,
+    required this.toUserId,
+  }) : super(key: key);
 
   @override
   _ReviewsScreenState createState() => _ReviewsScreenState();
@@ -38,6 +43,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         applianceId: widget.applianceId,
         reviewerId: authProvider.user!.id,
+        toUserId: widget.toUserId,
         comment: _reviewController.text.trim(),
         rating: _rating,
         createdAt: DateTime.now(),

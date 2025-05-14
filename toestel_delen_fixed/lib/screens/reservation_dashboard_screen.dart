@@ -323,7 +323,8 @@ class ReservationDashboardScreen extends StatelessWidget {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => ReviewsScreen(
-                                              applianceId: appliance.id),
+                                              applianceId: appliance.id,
+                                              toUserId: reservation.renterId),
                                         ),
                                       );
                                     },

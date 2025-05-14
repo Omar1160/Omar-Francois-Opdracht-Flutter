@@ -130,7 +130,7 @@ class FirebaseService {
     try {
       String fileName = const Uuid().v4();
       Reference ref = _storage.ref().child('appliance_images/$fileName');
-      
+
       // Explicitly set metadata to null to avoid plugin issues
       UploadTask uploadTask = ref.putFile(
         image,
@@ -245,7 +245,8 @@ class FirebaseService {
           .doc(reservationId)
           .update({'isCompleted': true});
     } catch (e) {
-      throw Exception('Failed to mark reservation as completed: ${e.toString()}');
+      throw Exception(
+          'Failed to mark reservation as completed: ${e.toString()}');
     }
   }
 
@@ -280,6 +281,13 @@ class FirebaseService {
       await _firestore.collection('users').doc(review.reviewerId).update({
         'trustScore': averageRating,
       });
+
+      await createNotification(
+        userId: review.toUserId,
+        title: 'Nieuwe beoordeling ontvangen',
+        message: 'Je hebt een nieuwe review ontvangen!',
+        type: 'review',
+      );
     } catch (e) {
       throw Exception('Failed to create review: ${e.toString()}');
     }
@@ -300,6 +308,7 @@ class FirebaseService {
     required String userId,
     required String title,
     required String message,
+    required String type,
   }) async {
     try {
       String id = DateTime.now().millisecondsSinceEpoch.toString();
@@ -308,6 +317,7 @@ class FirebaseService {
         userId: userId,
         title: title,
         message: message,
+        type: type,
         createdAt: DateTime.now(),
       );
       await _firestore
