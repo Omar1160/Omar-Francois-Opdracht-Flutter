@@ -34,7 +34,6 @@ dependencies:
   js: ^0.6.7
   geocoding: ^2.1.1
   http: ^1.1.0
-  flutter_date_pickers: 0.4.3
 
 dev_dependencies:
   flutter_test:

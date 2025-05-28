@@ -10,8 +10,6 @@ import 'package:toesteldelen_project/screens/reviews_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:flutter_date_pickers/flutter_date_pickers.dart';
 
 class ApplianceDetailScreen extends StatefulWidget {
   final Appliance appliance;
@@ -34,41 +32,6 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
       return userDoc.data()!['email'] ?? 'owner@example.com';
     }
     return 'owner@example.com';
-  }
-
-  Future<String> _getAddressFromLatLng(double lat, double lng) async {
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
-      if (placemarks.isNotEmpty) {
-        final place = placemarks.first;
-        return place.locality?.isNotEmpty == true
-            ? place.locality!
-            : (place.administrativeArea?.isNotEmpty == true
-                ? place.administrativeArea!
-                : (place.country ?? ''));
-      }
-    } catch (e) {
-      print(e);
-    }
-    return '${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}'; // fallback
-  }
-
-  // Functie om datums te groeperen tot periodes
-  List<List<DateTime>> groupDatesToRanges(List<DateTime> dates) {
-    if (dates.isEmpty) return [];
-    dates.sort();
-    List<List<DateTime>> ranges = [];
-    List<DateTime> currentRange = [dates.first];
-    for (int i = 1; i < dates.length; i++) {
-      if (dates[i].difference(dates[i - 1]).inDays == 1) {
-        currentRange.add(dates[i]);
-      } else {
-        ranges.add(List.from(currentRange));
-        currentRange = [dates[i]];
-      }
-    }
-    ranges.add(currentRange);
-    return ranges;
   }
 
   @override
@@ -152,30 +115,10 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                           color: AppColors.primary, size: 18),
                       const SizedBox(width: 4),
                       Expanded(
-                        child: FutureBuilder<String>(
-                          future: () {
-                            final parts = widget.appliance.location.split(',');
-                            final lat = double.tryParse(parts[0].trim()) ?? 0.0;
-                            final lng = double.tryParse(parts.length > 1
-                                    ? parts[1].trim()
-                                    : '0.0') ??
-                                0.0;
-                            return _getAddressFromLatLng(lat, lng);
-                          }(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Text('Locatie ophalen...');
-                            }
-                            if (snapshot.hasError) {
-                              return Text('Locatie niet gevonden');
-                            }
-                            return Text(
-                              snapshot.data ?? '',
-                              style: TextStyle(
-                                  color: AppColors.text.withOpacity(0.7)),
-                            );
-                          },
+                        child: Text(
+                          'Location: ${widget.appliance.location}',
+                          style:
+                              TextStyle(color: AppColors.text.withOpacity(0.7)),
                         ),
                       ),
                     ],
@@ -209,121 +152,45 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                             .toList();
                         availableDates.sort();
 
-                        DateTime firstDate = availableDates.first;
-                        DateTime lastDate = availableDates.last;
-                        DatePeriod? initialRange = _selectedDateRange != null
-                            ? DatePeriod(_selectedDateRange!.start,
-                                _selectedDateRange!.end)
-                            : null;
-
-                        final result = await showDialog<DatePeriod>(
+                        final DateTimeRange? picked = await showDateRangePicker(
                           context: context,
-                          builder: (context) {
-                            DatePeriod? tempRange = initialRange;
-                            return StatefulBuilder(
-                              builder: (context, setStateDialog) {
-                                return AlertDialog(
-                                  title: Text('Selecteer periode'),
-                                  content: SizedBox(
-                                    width: 350,
-                                    height: 350,
-                                    child: RangePicker(
-                                      selectedPeriod: tempRange ??
-                                          DatePeriod(firstDate, firstDate),
-                                      onChanged: (DatePeriod newPeriod) {
-                                        setStateDialog(() {
-                                          tempRange = newPeriod;
-                                        });
-                                      },
-                                      firstDate: firstDate,
-                                      lastDate: lastDate,
-                                      selectableDayPredicate: (date) {
-                                        return availableDates.any((d) =>
-                                            d.year == date.year &&
-                                            d.month == date.month &&
-                                            d.day == date.day);
-                                      },
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text('Annuleer'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        if (tempRange != null) {
-                                          // Controleer of ALLE dagen in de range beschikbaar zijn
-                                          bool allAvailable = true;
-                                          DateTime current = tempRange!.start;
-                                          while (!current
-                                              .isAfter(tempRange!.end)) {
-                                            if (!availableDates.any((d) =>
-                                                d.year == current.year &&
-                                                d.month == current.month &&
-                                                d.day == current.day)) {
-                                              allAvailable = false;
-                                              break;
-                                            }
-                                            current = current
-                                                .add(const Duration(days: 1));
-                                          }
-                                          if (allAvailable) {
-                                            Navigator.of(context)
-                                                .pop(tempRange);
-                                          } else {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                  content: Text(
-                                                      'Je kunt alleen een periode kiezen die volledig binnen de beschikbaarheid valt.')),
-                                            );
-                                          }
-                                        }
-                                      },
-                                      child: const Text('Bevestig'),
-                                    ),
-                                  ],
-                                );
-                              },
+                          firstDate: availableDates.first,
+                          lastDate: availableDates.last
+                              .add(const Duration(days: 365)),
+                          initialDateRange: _selectedDateRange ??
+                              DateTimeRange(
+                                start: availableDates.first,
+                                end: availableDates.first
+                                    .add(const Duration(days: 1)),
+                              ),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: AppColors.primary,
+                                  onPrimary: Colors.white,
+                                  surface: Colors.white,
+                                  onSurface: AppColors.text,
+                                ),
+                              ),
+                              child: child!,
                             );
                           },
                         );
-                        if (result != null) {
+
+                        if (picked != null) {
                           setState(() {
-                            _selectedDateRange = DateTimeRange(
-                              start: result.start,
-                              end: result.end,
-                            );
+                            _selectedDateRange = picked;
                           });
                         }
                       },
                     ),
                   const SizedBox(height: 8),
-                  Builder(
-                    builder: (context) {
-                      List<DateTime> availableDates = widget
-                          .appliance.availability
-                          .map((date) => DateTime.parse(date))
-                          .toList();
-                      List<List<DateTime>> ranges =
-                          groupDatesToRanges(availableDates);
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: ranges.map((range) {
-                          if (range.length == 1) {
-                            return Text(
-                                DateFormat('yyyy-MM-dd').format(range.first));
-                          } else {
-                            return Text(
-                              '${DateFormat('yyyy-MM-dd').format(range.first)} t/m ${DateFormat('yyyy-MM-dd').format(range.last)}',
-                            );
-                          }
-                        }).toList(),
-                      );
-                    },
+                  Wrap(
+                    spacing: 8,
+                    children: widget.appliance.availability.map((date) {
+                      return Chip(label: Text(date));
+                    }).toList(),
                   ),
                   const SizedBox(height: 24),
                   if (_showOwnerContact && user != null)

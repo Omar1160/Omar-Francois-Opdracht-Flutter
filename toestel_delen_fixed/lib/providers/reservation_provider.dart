@@ -26,27 +26,20 @@ class ReservationProvider with ChangeNotifier {
       );
       await _firebaseService.createReservation(reservation);
 
-      // Haal gebruikersnamen op
-      final firestore = _firebaseService.firestore;
-      final ownerDoc = await firestore.collection('users').doc(ownerId).get();
-      final renterDoc = await firestore.collection('users').doc(renterId).get();
-      final ownerName = ownerDoc.data()?['name'] ?? '';
-      final renterName = renterDoc.data()?['name'] ?? '';
-
       // Send notifications
       await _firebaseService.createNotification(
-          userId: ownerId,
-          userName: ownerName,
-          title: 'Nieuwe reservering',
-          message:
-              'Je hebt een nieuwe reservering van $renterName voor je apparaat van ${startDate.toString().split(' ')[0]} tot ${endDate.toString().split(' ')[0]}.');
+        userId: ownerId,
+        title: 'New Reservation',
+        message:
+            'You have a new reservation for your appliance from ${startDate.toString().split(' ')[0]} to ${endDate.toString().split(' ')[0]}.',
+      );
 
       await _firebaseService.createNotification(
-          userId: renterId,
-          userName: renterName,
-          title: 'Reserveringsbevestiging',
-          message:
-              'Je reservering van ${startDate.toString().split(' ')[0]} tot ${endDate.toString().split(' ')[0]} is aangemaakt.');
+        userId: renterId,
+        title: 'Reservation Confirmation',
+        message:
+            'Your reservation from ${startDate.toString().split(' ')[0]} to ${endDate.toString().split(' ')[0]} has been created.',
+      );
 
       notifyListeners();
     } catch (e) {
