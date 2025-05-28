@@ -14,6 +14,8 @@ class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
+  FirebaseFirestore get firestore => _firestore;
+
   // Authentication
   Future<AppUser> signIn(String email, String password) async {
     try {
@@ -130,7 +132,7 @@ class FirebaseService {
     try {
       String fileName = const Uuid().v4();
       Reference ref = _storage.ref().child('appliance_images/$fileName');
-      
+
       // Explicitly set metadata to null to avoid plugin issues
       UploadTask uploadTask = ref.putFile(
         image,
@@ -245,7 +247,8 @@ class FirebaseService {
           .doc(reservationId)
           .update({'isCompleted': true});
     } catch (e) {
-      throw Exception('Failed to mark reservation as completed: ${e.toString()}');
+      throw Exception(
+          'Failed to mark reservation as completed: ${e.toString()}');
     }
   }
 
@@ -280,6 +283,23 @@ class FirebaseService {
       await _firestore.collection('users').doc(review.reviewerId).update({
         'trustScore': averageRating,
       });
+
+      // Notificatie naar eigenaar
+      final applianceDoc = await _firestore
+          .collection('appliances')
+          .doc(review.applianceId)
+          .get();
+      final ownerId = applianceDoc.data()?['ownerId'] ?? '';
+      final reviewerDoc =
+          await _firestore.collection('users').doc(review.reviewerId).get();
+      final reviewerName = reviewerDoc.data()?['name'] ?? '';
+      await createNotification(
+        userId: ownerId,
+        userName: reviewerName,
+        title: 'Nieuwe review',
+        message:
+            '$reviewerName heeft een review achtergelaten: "${review.comment}"',
+      );
     } catch (e) {
       throw Exception('Failed to create review: ${e.toString()}');
     }
@@ -298,6 +318,7 @@ class FirebaseService {
   // Notification Management
   Future<void> createNotification({
     required String userId,
+    required String userName,
     required String title,
     required String message,
   }) async {
@@ -306,6 +327,7 @@ class FirebaseService {
       AppNotification notification = AppNotification(
         id: id,
         userId: userId,
+        userName: userName,
         title: title,
         message: message,
         createdAt: DateTime.now(),

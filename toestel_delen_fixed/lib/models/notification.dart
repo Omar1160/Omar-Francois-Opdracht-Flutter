@@ -1,6 +1,7 @@
 class AppNotification {
   final String id;
   final String userId;
+  final String userName;
   final String title;
   final String message;
   final DateTime createdAt;
@@ -9,6 +10,7 @@ class AppNotification {
   AppNotification({
     required this.id,
     required this.userId,
+    required this.userName,
     required this.title,
     required this.message,
     required this.createdAt,
@@ -19,6 +21,7 @@ class AppNotification {
     return {
       'id': id,
       'userId': userId,
+      'userName': userName,
       'title': title,
       'message': message,
       'createdAt': createdAt.toIso8601String(),
@@ -30,6 +33,7 @@ class AppNotification {
     return AppNotification(
       id: map['id'],
       userId: map['userId'],
+      userName: map['userName'] ?? '',
       title: map['title'],
       message: map['message'],
       createdAt: DateTime.parse(map['createdAt']),
